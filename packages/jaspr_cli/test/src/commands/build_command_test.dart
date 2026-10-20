@@ -326,6 +326,50 @@ void main() {
       });
     });
 
+    test('builds project with a custom flutter target', () async {
+      await io.runZoned(() async {
+        io.setupFakeProject('myapp', mode: 'client', flutterEmbedding: true);
+        io.stubDartSDK();
+        io.stubFlutterSDK();
+
+        final buildDaemon = io.setupFakeBuildDaemon(verifyArgs: buildRunnerFlutterBuildArgs);
+
+        final buildResult = runner.run(['build', '--verbose', '--flutter-target=lib/flutter_target.dart']);
+
+        await expectLater(io.stdout.queue, emits('Building jaspr for client rendering mode.'));
+
+        when(
+          () => io.process.start(
+            'flutter',
+            [
+              'build',
+              'web',
+              '-t',
+              'lib/flutter_target.dart',
+              '--no-wasm-dry-run',
+              '--output=build/flutter',
+            ],
+            workingDirectory: '/root/myapp',
+            runInShell: true,
+          ),
+        ).thenAnswer((_) async {
+          io.fs.file('/root/myapp/build/flutter/flutter_bootstrap.js')
+            ..createSync(recursive: true)
+            ..writeAsStringSync('FAKE FLUTTER BOOTSTRAP');
+          return FakeProcess.sync();
+        });
+
+        await io.runReleaseBuild(buildDaemon);
+
+        await expectLater(io.stdout.queue, emits('Completed building project to /build/jaspr.'));
+
+        // A configured entrypoint is never replaced by the generated empty one.
+        expect(io.fs.file('/root/myapp/.dart_tool/jaspr/flutter_target.dart').existsSync(), isFalse);
+
+        expect(await buildResult, equals(0));
+      });
+    });
+
     test('builds project with sitemap', () async {
       await io.runZoned(() async {
         io.setupFakeProject('myapp', mode: 'static');

@@ -1,6 +1,7 @@
 ## Unreleased
 
 - Support analyzer 13.x and 14.x while retaining compatibility with analyzer 12.1.
+- Added a `--flutter-target` option to `jaspr build` and `jaspr serve` for specifying the entrypoint of the embedded Flutter app. Pointing it at the app's own entrypoint lets Flutter's icon tree-shaker subset the icon fonts instead of shipping the declared fonts in full.
 
 ## 0.23.5
 

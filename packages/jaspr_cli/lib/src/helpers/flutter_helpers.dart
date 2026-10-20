@@ -9,7 +9,18 @@ import '../logging.dart';
 import '../process_runner.dart';
 import '../project.dart';
 
+/// Entrypoint used when the project does not provide one.
+///
+/// It is empty on purpose: Flutter only needs a valid program to collect assets.
+const _defaultFlutterTarget = '.dart_tool/jaspr/flutter_target.dart';
+
 mixin FlutterHelper on BaseCommand {
+  /// The entrypoint compiled for the embedded Flutter app.
+  ///
+  /// Only a real entrypoint exposes the app's `IconData` constants, which is what
+  /// Flutter's icon tree-shaker needs to subset the icon fonts.
+  String get flutterTarget => argResults!.option('flutter-target') ?? _defaultFlutterTarget;
+
   Map<String, String> getFlutterDartDefines(bool useWasm, bool release) {
     final flutterDefines = <String, String>{};
 
@@ -29,7 +40,7 @@ mixin FlutterHelper on BaseCommand {
         'run',
         '--device-id=web-server',
         '-t',
-        '.dart_tool/jaspr/flutter_target.dart',
+        flutterTarget,
         '--web-port=$flutterProxyPort',
         if (wasm) '--wasm',
         if (argResults!.flag('release')) '--release',
@@ -52,7 +63,7 @@ mixin FlutterHelper on BaseCommand {
         'build',
         'web',
         '-t',
-        '.dart_tool/jaspr/flutter_target.dart',
+        flutterTarget,
         if (wasm) '--wasm' else '--no-wasm-dry-run',
         '--output=build/flutter',
       ],
@@ -71,11 +82,14 @@ mixin FlutterHelper on BaseCommand {
   }
 
   Future<void> _ensureTarget() async {
-    final flutterTarget = File('.dart_tool/jaspr/flutter_target.dart').absolute;
-    if (!await flutterTarget.exists()) {
-      await flutterTarget.create(recursive: true);
+    // A configured entrypoint belongs to the project and stays untouched.
+    if (argResults!.option('flutter-target') != null) return;
+
+    final targetFile = File(_defaultFlutterTarget).absolute;
+    if (!await targetFile.exists()) {
+      await targetFile.create(recursive: true);
     }
-    await flutterTarget.writeAsString('void main() {}');
+    await targetFile.writeAsString('void main() {}');
   }
 }
 

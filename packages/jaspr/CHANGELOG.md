@@ -1,3 +1,7 @@
+## Unreleased
+
+- Added a `--flutter-target` option to `jaspr build` and `jaspr serve` for specifying the entrypoint of the embedded Flutter app. Pointing it at the app's own entrypoint lets Flutter's icon tree-shaker subset the icon fonts instead of shipping the declared fonts in full.
+
 ## 0.23.5
 
 - Fixed a dependency resolution problem when creating a new project by setting `build_web_compilers` to `4.8.5`.

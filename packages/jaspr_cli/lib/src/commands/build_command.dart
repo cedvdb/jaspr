@@ -108,6 +108,13 @@ class BuildCommand extends BaseCommand with ProxyHelper, FlutterHelper {
       negatable: true,
       defaultsTo: true,
     );
+    argParser.addOption(
+      'flutter-target',
+      help:
+          'Specify the entrypoint of the embedded Flutter app.\n'
+          'Defaults to a generated empty entrypoint that only collects the declared assets. '
+          "Point this at the app's own entrypoint so Flutter can tree-shake the icon fonts.",
+    );
     addDartDefineArgs();
   }
 

@@ -72,6 +72,12 @@ abstract class DevCommand extends BaseCommand with ProxyHelper, FlutterHelper {
       negatable: false,
       defaultsTo: false,
     );
+    argParser.addOption(
+      'flutter-target',
+      help:
+          'Specify the entrypoint of the embedded Flutter app.\n'
+          'Defaults to a generated empty entrypoint that only collects the declared assets.',
+    );
     addDartDefineArgs();
   }
 
